@@ -1,0 +1,82 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+main {
+  display: flex;
+}
+
+.tools {
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+  justify-content: space-evenly;
+  padding: 0 1rem;
+  border: 2px solid turquoise;
+  box-sizing: border-box;
+}
+
+.board-con header {
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  border: 2px solid goldenrod;
+}
+
+.board-con {
+  display: flex;
+  flex-flow: column;
+  flex: 5;
+  overflow: hidden;
+}
+
+.board-con h1 {
+  align-self: center;
+}
+
+.board-con button {
+  width: 1rem;
+  align-self: center;
+  max-height: 1rem;
+}
+
+#board {
+  flex: 4;
+  position: relative;
+  overflow: auto;
+}
+
+.node {
+  position: absolute;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 300ms ease-in-out,
+              box-shadow 150ms;
+  background-color: gold;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* box-shadow: 0 0 2px rgba(167, 167, 20, 0.3); */
+}
+
+.active {
+  box-shadow: 0 0 10px rgba(10, 142, 219, 0.4);
+}
+
+.node sub {
+  position: relative;
+  top: 0.18rem;
+  left: 0.02rem;
+  font-size: 0.4rem;
+}
+
+.collapse {
+  transform: scale(0);
+}
