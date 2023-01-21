@@ -70,6 +70,23 @@ function drawNode(x, y) {
     }
     log(`ActiveID is ${activeNodeID}`)
   })
+  nodeEl.addEventListener("dblclick", (event) => {
+    const el = event.target
+    log(`removing child with id ${el.id}`)
+    boardEl.removeChild(el)
+    const edges = document.querySelectorAll('.edge')
+    edges.forEach(edge => {
+      const arr = edge.id.split('-')
+      if (arr.includes(el.id))
+        boardEl.removeChild(edge)
+    })
+    graph = graph.filter(node => {
+      node.pointsTo = node.pointsTo.filter(to => to.id != el.id)
+      return node.id != el.id
+    })
+    activeNodeID = -1
+    log(JSON.stringify(graph))
+  })
   boardEl.appendChild(nodeEl)
 
   return nodeEl
@@ -97,8 +114,19 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
     // arrowEl.style.transform = `rotate(${y2 > y1 ? angel : -angel}rad)`
     lineEl.appendChild(arrowEl)
   }
-
-  log(`Angel between vectors ${v1} and ${v2} is ${angel}`)
+  lineEl.addEventListener("dblclick", (event) => {
+    const id = event.target.id
+    boardEl.removeChild(event.target)
+    const [from, to] = id.split('-')
+    let node = graph.find(node => node.id == from)
+    log(`${from} -> ${to} (${JSON.stringify(node)})`)
+    node.pointsTo = node.pointsTo.filter(x => x.id != to)
+    if (!isDirected) {
+      node = graph.find(node => node.id == to)
+      node.pointsTo = node.pointsTo.filter(x => x.id != from)
+    }
+    log(JSON.stringify(graph))
+  })
   lineEl.classList.add("edge")
   lineEl.id = `${id1}-${id2}`
   boardEl.appendChild(lineEl)
@@ -131,3 +159,5 @@ boardEl.addEventListener("click", (event) => {
     }
   }
 })
+
+boardEl.addEventListener("dblclick", () => log("double click on board"))
