@@ -9,7 +9,8 @@ boardHeight = boardEl.getBoundingClientRect().height,
 boardWidth = boardEl.getBoundingClientRect().width
 const { log } = console,
 letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-nodeRadius = 0.7 * 16
+nodeRadius = 0.7 * 16,
+arrowHalfHeight = 10
 
 log(`Board size is: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
 
@@ -53,16 +54,15 @@ function drawNode(x, y) {
       // add edge between active node and current node
       const from = graph.find(node => node.id === activeNodeID)
       const to = graph.find(node => node.id == event.target.id)
-      log(`to is ${JSON.stringify(to)}`)
       // edge already exists
       if (from.pointsTo.find(node => node.id == to.id) ||
           !isDirected && to.pointsTo.find(node => node.id == from.id)) {
         log("Edge already exists")
       } else {
-        log(`Adding edge (${from.x}, ${from.y}) ${isDirected ? '' : '<'}-> (${to.x}, ${to.y})`)
         from.pointsTo.push({id: to.id, weight: 1})
         if (!isDirected)
           to.pointsTo.push({id: from.id, weight: 1})
+        drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
         log(JSON.stringify(graph))
       }
       document.getElementById(`${activeNodeID}`).classList.remove("active")
@@ -73,6 +73,35 @@ function drawNode(x, y) {
   boardEl.appendChild(nodeEl)
 
   return nodeEl
+}
+
+function drawEdge(x1, y1, x2, y2, id1, id2) {
+  log(`Adding edge (${x1}, ${y1}) ${isDirected ? '' : '<'}-> (${x2}, ${y2})`)
+  const lineEl = document.createElement("div")
+  const length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+  lineEl.style.width = `${length}px`
+  lineEl.style.left = `${(x1 + x2) / 2.0}px`
+  lineEl.style.top = `${(y1 + y2) / 2.0}px`
+  const v1 = [1, 0]
+  const v2 = [x2 - x1, y2 - y1]
+  const angel = Math.acos((v2[0]) * 1.0 / Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2)))
+  lineEl.style.transform = `translate(-50%) rotate(${y2 > y1 ? angel : -angel}rad)`
+  
+  // add an arrow
+  if (isDirected) {
+    const arrowEl = document.createElement("span")
+    arrowEl.classList.add("arrow")
+    arrowEl.innerText = '>'
+    arrowEl.style.right = `${nodeRadius}px`
+    arrowEl.style.top = `-${arrowHalfHeight}px`
+    // arrowEl.style.transform = `rotate(${y2 > y1 ? angel : -angel}rad)`
+    lineEl.appendChild(arrowEl)
+  }
+
+  log(`Angel between vectors ${v1} and ${v2} is ${angel}`)
+  lineEl.classList.add("edge")
+  lineEl.id = `${id1}-${id2}`
+  boardEl.appendChild(lineEl)
 }
 
 function notCollideWithOthers(x, y) {
