@@ -1,16 +1,24 @@
+import langPacks from "./assets/data/languages.js"
+
 const boardEl = document.getElementById("board")
+const weightBtnEl = document.querySelector(".weighted-con button")
+const directedBtnEl = document.querySelector(".directed-con button")
+const languageEl = document.getElementById("language")
 
 
-let nodeNumber = 0,
-isDirected = false,
-graph = [],
-activeNodeID = -1,
-boardHeight = boardEl.getBoundingClientRect().height,
-boardWidth = boardEl.getBoundingClientRect().width
+let language = "ua",
+  langPack = langPacks["ua"],
+  nodeNumber = 0,
+  isDirected = false,
+  isWeighted = false,
+  graph = [],
+  activeNodeID = -1,
+  boardHeight = boardEl.getBoundingClientRect().height,
+  boardWidth = boardEl.getBoundingClientRect().width
 const { log } = console,
-letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-nodeRadius = 0.7 * 16,
-arrowHalfHeight = 10
+  letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  nodeRadius = 0.7 * 16,
+  arrowHalfHeight = 10
 
 log(`Board size is: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
 
@@ -20,8 +28,41 @@ window.addEventListener("resize", () => {
   log(`Board is resized: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
 })
 
+languageEl.addEventListener("change", (event) => {
+  language = languageEl.value
+  log("Language is changed to " + language)
+  langPack = langPacks[language]
+
+  document.getElementById("draw-your-graph-text").innerText = langPack["draw-your-graph-text"]
+  document.getElementById("choose-language-text").innerText = langPack["choose-language-text"]
+  document.getElementById("weighted-label-text").innerText = langPack["weighted-label-text"][isWeighted ? 1 : 0]
+  document.getElementById("directed-label-text").innerText = langPack["directed-label-text"][isDirected ? 1 : 0]
+})
+
+weightBtnEl.addEventListener("click", (event) => {
+  if (event.target.classList.contains("active")) {
+    isWeighted = false
+    event.target.classList.remove("active")
+  } else {
+    isWeighted = true
+    event.target.classList.add("active")
+  }
+  document.getElementById("weighted-label-text").innerText = langPack["weighted-label-text"][isWeighted ? 1 : 0]
+})
+
+directedBtnEl.addEventListener("click", (event) => {
+  if (event.target.classList.contains("active")) {
+    isDirected = false
+    event.target.classList.remove("active")
+  } else {
+    isDirected = true
+    event.target.classList.add("active")
+  }
+  document.getElementById("directed-label-text").innerText = langPack["directed-label-text"][isDirected ? 1 : 0]
+})
+
 function drawNode(x, y) {
-  node = {
+  let node = {
     id: nodeNumber++,
     x,
     y,
