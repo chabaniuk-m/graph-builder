@@ -48,6 +48,7 @@ main {
 }
 
 .board-con {
+  position: relative;
   display: flex;
   flex-flow: column;
   flex: 5;
@@ -58,7 +59,7 @@ main {
   align-self: center;
 }
 
-.board-con button {
+.board-con button:not(#popup) {
   width: 1rem;
   align-self: center;
   max-height: 1rem;
@@ -80,7 +81,7 @@ main {
   position: relative;
   min-height: 26px;
   padding: 0;
-  width: 48px;
+  width: 48px !important;
   border-radius: 13px;
   border: 1px solid lightslategray;
   box-sizing: border-box;
@@ -150,6 +151,17 @@ main {
   z-index: 5;
 }
 
+.weight {
+  overflow: hidden;
+  resize: none;
+  border: none;
+  text-wrap: avoid;
+}
+
+.weight.warning:focus {
+  outline-color: red;
+}
+
 .node.active {
   box-shadow: 0 0 10px rgba(10, 142, 219, 0.4);
 }
@@ -163,4 +175,32 @@ main {
 
 .collapse {
   transform: scale(0);
+}
+
+/* elements */
+
+#popup {
+  position: absolute;
+  max-width: 80vw;
+  padding: 10px 4px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  background-color: beige;
+  left: 50%;
+  bottom: 30px;
+  transform: translate(-50%, calc(100% + 30px)) scale(0);
+  opacity: 0;
+  transition: opacity 500ms ease-in-out,
+              transform 500ms ease-in-out;
+}
+
+#popup.alert {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+#popup p {
+  margin: 0;
+  max-width: 300px;
 }
