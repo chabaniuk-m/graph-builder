@@ -114,6 +114,7 @@ main {
   flex: 4;
   position: relative;
   overflow: auto;
+  min-height: 500px;
 }
 
 .node {
@@ -188,7 +189,7 @@ main {
 /* elements */
 
 #popup {
-  position: absolute;
+  position: fixed;
   max-width: 80vw;
   padding: 10px 4px;
   border-radius: 8px;
@@ -201,6 +202,7 @@ main {
   opacity: 0;
   transition: opacity 500ms ease-in-out,
               transform 500ms ease-in-out;
+  z-index: 100;
 }
 
 #popup.alert {

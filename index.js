@@ -1,5 +1,5 @@
 import langPacks from "./assets/data/languages.js"
-import {numberInputHandler, saveWeight} from "./lib/utils.js";
+import {numberInputHandler} from "./lib/utils.js";
 
 const boardEl = document.getElementById("board")
 const propsEl = document.querySelector(".board-con > .props")
@@ -31,7 +31,37 @@ document.getElementById("download-btn").addEventListener("click", (event) => {
 }, false)
 
 // UTILS
-
+function saveWeight(useInput, edgeID) {
+  console.log(`Saving the weight ${useInput} on ${edgeID}`)
+  let weight = NaN
+  let inputEl = document.getElementById(edgeID)
+  log(inputEl)
+  if (isNaN(useInput) || useInput.length === 0) {
+    weight = 0
+    inputEl.value = '0'
+  } else if (useInput.includes('.') ||
+             useInput.includes('e')) {
+    weight = parseFloat(useInput)
+    if (`${weight}` !== useInput) {
+      inputEl.value = `${weight}`
+      if (`${weight}`.includes("Infinity")) {
+        inputEl.cols = 7
+      }
+    }
+  } else {
+    weight = parseInt(useInput, 10)
+    if (weight > Number.MAX_SAFE_INTEGER ||
+        weight < Number.MIN_SAFE_INTEGER) {
+      inputEl.value = `${weight}`
+    }
+  }
+  let arr = edgeID.substring(0, edgeID.length - 2).split("-")
+  let id1 = parseInt(arr[0])
+  let id2 = parseInt(arr[1])
+  graph.nodes.find(node => node.id === id1).pointsTo.find(node => node.id === id2).weight = weight
+  if (!graph.directed)
+    graph.nodes.find(node => node.id === id2).pointsTo.find(node => node.id === id1).weight = weight
+}
 
 export let langPack = langPacks["ua"]
 export let graph = {
