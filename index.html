@@ -10,7 +10,7 @@
   <script src="lib/utils.js" type="module" defer></script>
   <script src="index.js" type="module" defer></script>
 </head>
-<body>
+<body onload="init()">
   <main>
     <div class="tools">
       <button>Властивості графа</button>
@@ -30,6 +30,37 @@
       <header>
         <h1 id="draw-your-graph-text">Побудуй свій граф</h1>
         <button>i</button>
+        <div id="test-download">
+          <label for="filename">Filename</label>
+          <input type="text" name="filename" id="filename" value="hello.txt">
+          <br><br><br>
+          <label for="text-val">File content</label>
+          <textarea name="text-val" id="text-val" rows="4"></textarea>
+          <br>
+          <button type="button" id="download-btn">
+            Download
+          </button>
+        </div>
+
+<!--        test upload-->
+        <input id="fileInput" type="file" name="file" accept=".json, .txt" />
+        <pre id="fileContent"></pre>
+        <script>
+          function init() {
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+          }
+
+          function handleFileSelect(event) {
+            const reader = new FileReader()
+            reader.onload = handleFileLoad;
+            reader.readAsText(event.target.files[0])
+          }
+
+          function handleFileLoad(event) {
+            console.log(event);
+            document.getElementById('fileContent').textContent = event.target.result;
+          }
+        </script>
         <div class="lang-con">
           <div class="label-con">
             <label for="language"><i class="fa-solid fa-language"></i></label>
@@ -51,11 +82,10 @@
             <span id="directed-label-text">Неорієнтований</span>
             <button class="switch"></button>
           </div>
-          <textarea name="number" id="number" class="weight" cols="2" rows="1">1</textarea>
         </div>
         <div id="board">
         </div>
-        <button id="popup"><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. A animi at exercitationem ipsum molestiae nostrum perferendis perspiciatis sed, vel voluptatem! Necessitatibus placeat, quidem. Ab at cupiditate modi optio, quia sint!</p></button>
+        <button id="popup"></button>
       </div>
     </div>
   </main>

@@ -136,7 +136,9 @@ main {
 
 .edge {
   position: absolute;
-  display: block;
+  display: flex;
+  justify-content: center;
+  overflow-x: visible;
   border: 1px black solid;
   height: 1px;
   padding: 0;
@@ -148,14 +150,20 @@ main {
 
 .arrow {
   position: absolute;
-  z-index: 5;
+  z-index: 2;
+}
+
+#test-download {
+  display: flex;
 }
 
 .weight {
   overflow: hidden;
   resize: none;
   border: none;
-  text-wrap: avoid;
+  display: flex;
+  transform: translateY(-110%);
+  background: transparent;
 }
 
 .weight.warning:focus {
