@@ -14,6 +14,13 @@ export default {
         "cursor-moving-is-forbidden-text": "It is forbidden to move cursor here",
         "sign-after-e-text": "There must be + or - after e",
         "number-out-of-bound-text": "Entered number is out of bound for allowed real number, so will be saved as<br>${}",
+        "vertex-name-digit-text": "Vertex name cannot start with digit",
+        "vertex-name-space-text": "Vertex name cannot start with space",
+        "vertex-name-underscore-text": "Vertex name cannot contain underscore (use dash instead)",
+        "vertex-name-dash-text": "Vertex name cannot start with dash",
+        "vertex-name-backtick-text": "This symbol is forbidden, use ' instead",
+        "vertex-name-length-text": "Vertex name is restricted to ${} symbols",
+        "vertex-name-incorrect-symbol-text": "Incorrect symbol",
     },
     "ua": {
         "draw-your-graph-text": "Побудуй свій граф",
@@ -30,5 +37,12 @@ export default {
         "cursor-moving-is-forbidden-text": "Переміщувати курсор заборонено",
         "sign-after-e-text": "Після e потрібно ставити + або -",
         "number-out-of-bound-text": "Введене число виходить за допустимі межі для дійного числа, тому буде збережене як<br>${}",
+        "vertex-name-digit-text": "Назва вершини не може починатися з числа",
+        "vertex-name-space-text": "Назва вершини не може починатися з пробілу",
+        "vertex-name-underscore-text": "Назва вершини не може містити підкреслення (замість нього можна використати тире)",
+        "vertex-name-dash-text": "Назва вершини не може починатися з тире",
+        "vertex-name-backtick-text": "Цей символ заборонений, використовуйте '",
+        "vertex-name-length-text": "Довжина імені обмежена ${} символами",
+        "vertex-name-incorrect-symbol-text": "Символ заборонений",
     }
 }

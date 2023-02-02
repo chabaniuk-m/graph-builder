@@ -47,12 +47,17 @@ main {
   cursor: pointer;
 }
 
-.board-con {
-  position: relative;
+.board-section {
   display: flex;
   flex-flow: column;
   flex: 5;
   overflow: hidden;
+}
+
+.board-con {
+  position: relative;
+  display: flex;
+  flex-flow: column;
 }
 
 .board-con h1 {
@@ -131,6 +136,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
   z-index: 1;
   /* box-shadow: 0 0 2px rgba(167, 167, 20, 0.3); */
 }
@@ -165,6 +171,7 @@ main {
   display: flex;
   transform: translateY(-110%);
   background: transparent;
+  text-align-last: center;
 }
 
 .weight.warning:focus {
@@ -182,8 +189,36 @@ main {
   font-size: 0.4rem;
 }
 
+.node .name {
+  position: relative;
+  overflow: hidden;
+  resize: none;
+  border: none;
+  display: flex;
+  /*white-space: nowrap;*/
+  background: transparent;
+  width: 50px !important;
+  height: 0.8rem;
+  text-align-last: center;
+  z-index: 100;
+}
+
+.node .name.up {
+  bottom: 1.4rem;
+}
+
+.node .name.warning:focus {
+  outline-color: red;
+}
+
 .collapse {
   transform: scale(0);
+}
+
+#saved-sect {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 /* elements */

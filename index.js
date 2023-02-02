@@ -1,5 +1,5 @@
 import langPacks from "./assets/data/languages.js"
-import {numberInputHandler} from "./lib/utils.js";
+import {isDigit, numberInputHandler, popupMessage} from "./lib/utils.js";
 
 const boardEl = document.getElementById("board")
 const propsEl = document.querySelector(".board-con > .props")
@@ -134,6 +134,105 @@ directedBtnEl.addEventListener("click", (event) => {
   document.getElementById("directed-label-text").innerText = langPack["directed-label-text"][isDirected ? 1 : 0]
 })
 
+let ctrlDown = false
+
+document.addEventListener("keydown", event => event.key === "Control" ? ctrlDown = true : undefined)
+document.addEventListener("keyup", event => event.key === "Control" ? ctrlDown = false : undefined)
+
+function addName(nodeEl) {
+  console.log("Adding the name...")
+  console.log(nodeEl.innerHTML)
+  let index = ""
+  if (nodeEl.children.length > 0) {
+    console.log(nodeEl.children[0])
+    index = nodeEl.children[0].innerText
+  }
+  let name = nodeEl.innerText
+  nodeEl.innerText = ""
+  let nameInputEl = document.createElement("textarea")
+  nameInputEl.classList.add("name")
+  nameInputEl.value = name
+  nameInputEl.rows = 1
+  nameInputEl.cols = 2
+  nodeEl.appendChild(nameInputEl)
+  nameInputEl.focus()
+  console.log(`Input element is of ${nameInputEl.cols} cols`)
+  nameInputEl.addEventListener("focusout", event => {
+    console.log("Saving the name...")
+  })
+  nameInputEl.addEventListener("keydown", event => {
+    let key = event.key
+    let val = event.target.value
+    let save = true
+    console.log(key)
+    if (["Shift", "Control", "Alt", "Command"].includes(key)) {
+      event.preventDefault()
+      return
+    }
+    if (key.toUpperCase() !== key.toLowerCase() ||
+        ["\"", "'"].includes(key)) {
+      // letter
+    } else if (isDigit(key)) {
+      if (val.length === 0) {
+        popupMessage(langPack["vertex-name-digit-text"], 2000)
+        save = false
+      }
+    } else if (key === " ") {
+      if (val.length === 0) {
+        popupMessage(langPack["vertex-name-space-text"], 2000)
+        save = false
+      }
+    } else if (key === "_") {
+      popupMessage(langPack["vertex-name-space-text"])
+      save = false
+    } else if (key === "-") {
+      if (val.length === 0) {
+        popupMessage(langPack["vertex-name-dash-text"], 2000)
+        save = false
+      }
+    } else if (key === "`") {
+      popupMessage(langPack["vertex-name-backtick-text"], 2000)
+      save = false
+    } else if (key === "Enter") {
+      event.target.blur()
+      event.target.preventDefault()
+      return
+    } else if (key === "Tab") {
+      return
+    } else if (val.length === 35) {
+      popupMessage(langPack["vertex-name-length-text"].replace("${}", `${35}`), 2000)
+      save = false
+    } else {
+      save = false
+      popupMessage(langPack["vertex-name-incorrect-symbol-text"], 1000)
+    }
+
+    if (key === "Backspace") {
+      if (event.target.cols > 2) {
+        event.target.cols = event.target.cols - 1
+        if (event.target.cols === 3)
+          event.target.classList.remove("up")
+      }
+      event.target.style.width = `${event.target.scrollWidth}px`
+      return
+    }
+
+    if (!save) {
+      event.preventDefault()
+    } else {
+      log(`Adding the symbol to the end, length = ${val.length}, cols = ${event.target.cols}`)
+      if (val.length >= event.target.cols) {
+        console.log("Adding one col")
+        event.target.cols = event.target.cols + 1
+        if (!event.target.classList.contains("up"))
+          event.target.classList.add("up")
+      }
+    }
+
+    event.target.style.width = `${event.target.scrollWidth}px`
+  })
+}
+
 function drawNode(x, y) {
   let node = {
     id: nodeNumber++,
@@ -156,33 +255,37 @@ function drawNode(x, y) {
     nodeEl.appendChild(sub)
   }
   nodeEl.addEventListener("click", (event) => {
-    if (activeNodeID === -1) {
-      // there is no active node
-      nodeEl.classList.add("active")
-      activeNodeID = parseInt(nodeEl.id)
-    } else if (activeNodeID == nodeEl.id) {
-      // deactivate current node
-      nodeEl.classList.remove("active")
-      activeNodeID = -1
+    if (ctrlDown) {
+      addName(nodeEl)
     } else {
-      // add edge between active node and current node
-      const from = graph.nodes.find(node => node.id === activeNodeID)
-      const to = graph.nodes.find(node => node.id == event.target.id)
-      // edge already exists
-      if (from.pointsTo.find(node => node.id == to.id) ||
-          !isDirected && to.pointsTo.find(node => node.id == from.id)) {
-        log("Edge already exists")
+      if (activeNodeID === -1) {
+        // there is no active node
+        nodeEl.classList.add("active")
+        activeNodeID = parseInt(nodeEl.id)
+      } else if (activeNodeID == nodeEl.id) {
+        // deactivate current node
+        nodeEl.classList.remove("active")
+        activeNodeID = -1
       } else {
-        from.pointsTo.push({id: to.id, weight: 1})
-        if (!isDirected)
-          to.pointsTo.push({id: from.id, weight: 1})
-        drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
-        log(JSON.stringify(graph))
+        // add edge between active node and current node
+        const from = graph.nodes.find(node => node.id === activeNodeID)
+        const to = graph.nodes.find(node => node.id == event.target.id)
+        // edge already exists
+        if (from.pointsTo.find(node => node.id == to.id) ||
+            !isDirected && to.pointsTo.find(node => node.id == from.id)) {
+          log("Edge already exists")
+        } else {
+          from.pointsTo.push({id: to.id, weight: 1})
+          if (!isDirected)
+            to.pointsTo.push({id: from.id, weight: 1})
+          drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
+          log(JSON.stringify(graph))
+        }
+        document.getElementById(`${activeNodeID}`).classList.remove("active")
+        activeNodeID = -1
       }
-      document.getElementById(`${activeNodeID}`).classList.remove("active")
-      activeNodeID = -1
+      log(`ActiveID is ${activeNodeID}`)
     }
-    log(`ActiveID is ${activeNodeID}`)
   })
   nodeEl.addEventListener("dblclick", (event) => {
     const el = event.target
