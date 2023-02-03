@@ -1,5 +1,13 @@
 import langPacks from "./assets/data/languages.js"
-import {isDigit, numberInputHandler, popupMessage} from "./lib/utils.js";
+import {
+  addNameFromID,
+  hidePopup,
+  isDigit,
+  isNameAlreadyPresent,
+  numberInputHandler,
+  popupMessage,
+  saveName
+} from "./lib/utils.js";
 
 const boardEl = document.getElementById("board")
 const propsEl = document.querySelector(".board-con > .props")
@@ -77,7 +85,6 @@ let language = "ua",
   boardHeight = boardEl.getBoundingClientRect().height,
   boardWidth = boardEl.getBoundingClientRect().width
 const { log } = console,
-  letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
   nodeRadius = 0.7 * 16,
   arrowHalfHeight = 10
 
@@ -157,9 +164,8 @@ function addName(nodeEl) {
   nodeEl.appendChild(nameInputEl)
   nameInputEl.focus()
   console.log(`Input element is of ${nameInputEl.cols} cols`)
-  nameInputEl.addEventListener("focusout", event => {
-    console.log("Saving the name...")
-  })
+  nameInputEl.addEventListener("click", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
+  nameInputEl.addEventListener("focusout", event => saveName(event.target))
   nameInputEl.addEventListener("keydown", event => {
     let key = event.key
     let val = event.target.value
@@ -169,7 +175,7 @@ function addName(nodeEl) {
       event.preventDefault()
       return
     }
-    if (key.toUpperCase() !== key.toLowerCase() ||
+    if (key.length === 1 && key.toUpperCase() !== key.toLowerCase() ||
         ["\"", "'"].includes(key)) {
       // letter
     } else if (isDigit(key)) {
@@ -194,8 +200,24 @@ function addName(nodeEl) {
       popupMessage(langPack["vertex-name-backtick-text"], 2000)
       save = false
     } else if (key === "Enter") {
+      event.preventDefault()
       event.target.blur()
-      event.target.preventDefault()
+      console.log("Preventing default behavior and returning")
+      return
+    } else if (key === "Backspace") {
+      console.log(`Backspace is pressed: val is "${val}" is Control Down = ${ctrlDown}`)
+      hidePopup()
+      if (event.target.cols > 2) {
+        event.target.cols = event.target.cols - 1
+        if (val.length <= 4)
+          if (event.target.classList.contains("up"))
+            event.target.classList.remove("up")
+      }
+      if (ctrlDown && !val.includes(" ")) {
+        event.target.cols = 2
+        if (event.target.classList.contains("up"))
+          event.target.classList.remove("up")
+      }
       return
     } else if (key === "Tab") {
       return
@@ -207,29 +229,25 @@ function addName(nodeEl) {
       popupMessage(langPack["vertex-name-incorrect-symbol-text"], 1000)
     }
 
-    if (key === "Backspace") {
-      if (event.target.cols > 2) {
-        event.target.cols = event.target.cols - 1
-        if (event.target.cols === 3)
-          event.target.classList.remove("up")
-      }
-      event.target.style.width = `${event.target.scrollWidth}px`
-      return
-    }
-
     if (!save) {
       event.preventDefault()
     } else {
       log(`Adding the symbol to the end, length = ${val.length}, cols = ${event.target.cols}`)
-      if (val.length >= event.target.cols) {
+      if (isNameAlreadyPresent(val + key)) {
+        event.target.classList.add("warning")
+        popupMessage(langPack["name-is-already-present-text"], 1500)
+      } else {
+        if (event.target.classList.contains("warning"))
+          event.target.classList.remove("warning")
+        hidePopup()
+      }
+      if (val.length - 1 >= event.target.cols) {
         console.log("Adding one col")
         event.target.cols = event.target.cols + 1
         if (!event.target.classList.contains("up"))
           event.target.classList.add("up")
       }
     }
-
-    event.target.style.width = `${event.target.scrollWidth}px`
   })
 }
 
@@ -244,16 +262,10 @@ function drawNode(x, y) {
   log(`Node created ${JSON.stringify(node)}`)
   const nodeEl = document.createElement("div")
   nodeEl.id = node.id
-  nodeEl.innerText = letters[node.id % 26]
   nodeEl.classList.add('node')
   nodeEl.classList.add('collapse')
   nodeEl.style.left = `${x - nodeRadius}px`
   nodeEl.style.top = `${y - nodeRadius}px`
-  if (node.id >= 26) {
-    const sub = document.createElement("sub")
-    sub.innerText = Math.round(node.id / 26)
-    nodeEl.appendChild(sub)
-  }
   nodeEl.addEventListener("click", (event) => {
     if (ctrlDown) {
       addName(nodeEl)
@@ -307,6 +319,7 @@ function drawNode(x, y) {
     log(JSON.stringify(graph))
   })
   boardEl.appendChild(nodeEl)
+  addNameFromID(node.id)
 
   return nodeEl
 }
@@ -316,9 +329,9 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
   const lineEl = document.createElement("div")
   lineEl.id = `${id1}-${id2}`
   const length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
-  lineEl.style.width = `${length}px`
-  lineEl.style.left = `${(x1 + x2) / 2.0}px`
-  lineEl.style.top = `${(y1 + y2) / 2.0}px`
+  lineEl.style.width = `${length - 2 * nodeRadius - 2.5}px`
+  lineEl.style.left = `${(x1 + x2) / 2.0 + 1.7}px`
+  lineEl.style.top = `${(y1 + y2) / 2.0 + 1}px`
   const v1 = [1, 0]
   const v2 = [x2 - x1, y2 - y1]
   const angel = Math.acos((v2[0]) / Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2)))
@@ -344,7 +357,7 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
     const arrowEl = document.createElement("span")
     arrowEl.classList.add("arrow")
     arrowEl.innerText = '>'
-    arrowEl.style.right = `${nodeRadius}px`
+    arrowEl.style.right = `0`
     arrowEl.style.top = `-${arrowHalfHeight}px`
     arrowEl.addEventListener("dblclick", () => removeLine(lineEl))
     lineEl.appendChild(arrowEl)
@@ -362,6 +375,7 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
       weightInputEl.style.transform = "rotate(180deg) translateY(-10%)";
     }
     weightInputEl.addEventListener("keydown", numberInputHandler)
+    weightInputEl.addEventListener("click", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
     weightInputEl.addEventListener("focusout", (event) => {
       saveWeight(event.target.value.replaceAll(" ", ''), event.target.id)
     })

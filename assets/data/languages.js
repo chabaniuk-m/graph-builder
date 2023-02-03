@@ -21,6 +21,7 @@ export default {
         "vertex-name-backtick-text": "This symbol is forbidden, use ' instead",
         "vertex-name-length-text": "Vertex name is restricted to ${} symbols",
         "vertex-name-incorrect-symbol-text": "Incorrect symbol",
+        "name-is-already-present-text": "This name is already present",
     },
     "ua": {
         "draw-your-graph-text": "Побудуй свій граф",
@@ -44,5 +45,6 @@ export default {
         "vertex-name-backtick-text": "Цей символ заборонений, використовуйте '",
         "vertex-name-length-text": "Довжина імені обмежена ${} символами",
         "vertex-name-incorrect-symbol-text": "Символ заборонений",
+        "name-is-already-present-text": "Кожна вершина повинна мати унікальне ім'я",
     }
 }
