@@ -170,6 +170,7 @@ main {
   resize: none;
   border: none;
   display: flex;
+  pointer-events: none;
   transform: translateY(-110%);
   background: transparent;
   text-align-last: center;
@@ -197,6 +198,7 @@ main {
   border: none;
   overflow: hidden;
   display: grid;
+  pointer-events: none;
   white-space: pre-wrap;
   /*white-space: nowrap;*/
   background: transparent;

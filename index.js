@@ -111,6 +111,7 @@ function disableProperties() {
   weightBtnEl.disabled = "true"
   directedBtnEl.disabled = "true"
   propsEl.style.opacity = "0.6"
+  nodeNumber = 0
 }
 
 function enableProperties() {
@@ -150,105 +151,116 @@ function addName(nodeEl) {
   console.log("Adding the name...")
   console.log(nodeEl.innerHTML)
   let index = ""
+  let isTextArea = false
   if (nodeEl.children.length > 0) {
-    console.log(nodeEl.children[0])
-    index = nodeEl.children[0].innerText
-  }
-  let name = nodeEl.innerText
-  nodeEl.innerText = ""
-  let nameInputEl = document.createElement("textarea")
-  nameInputEl.classList.add("name")
-  nameInputEl.value = name
-  nameInputEl.rows = 1
-  nameInputEl.cols = 2
-  nodeEl.appendChild(nameInputEl)
-  nameInputEl.focus()
-  console.log(`Input element is of ${nameInputEl.cols} cols`)
-  nameInputEl.addEventListener("click", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
-  nameInputEl.addEventListener("focusout", event => saveName(event.target))
-  nameInputEl.addEventListener("keydown", event => {
-    let key = event.key
-    let val = event.target.value
-    let save = true
-    console.log(key)
-    if (["Shift", "Control", "Alt", "Command"].includes(key)) {
-      event.preventDefault()
-      return
+    console.log(`The tag name of the children is ${nodeEl.children[0].tagName}`)
+    if (nodeEl.children[0].tagName !== "TEXTAREA") {
+      console.log(nodeEl.children[0])
+      index = nodeEl.children[0].innerText
+    } else {
+      console.log("It is a text area!")
+      nodeEl.children[0].focus()
+      isTextArea = true
     }
-    if (key.length === 1 && key.toUpperCase() !== key.toLowerCase() ||
-        ["\"", "'"].includes(key)) {
-      // letter
-    } else if (isDigit(key)) {
-      if (val.length === 0) {
-        popupMessage(langPack["vertex-name-digit-text"], 2000)
-        save = false
+  }
+  if (!isTextArea) {
+    let name = nodeEl.innerText
+    nodeEl.innerText = ""
+    let nameInputEl = document.createElement("textarea")
+    nameInputEl.classList.add("name")
+    nameInputEl.value = name
+    nameInputEl.rows = 1
+    nameInputEl.cols = 2
+    nodeEl.appendChild(nameInputEl)
+    nameInputEl.focus()
+    console.log(`Input element is of ${nameInputEl.cols} cols`)
+    // nameInputEl.addEventListener("click", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
+    // nameInputEl.addEventListener("focusin", event => event.preventDefault())
+    nameInputEl.addEventListener("focusout", event => saveName(event.target))
+    nameInputEl.addEventListener("keydown", event => {
+      let key = event.key
+      let val = event.target.value
+      let save = true
+      console.log(key)
+      if (["Shift", "Control", "Alt", "Command"].includes(key)) {
+        event.preventDefault()
+        return
       }
-    } else if (key === " ") {
-      if (val.length === 0) {
-        popupMessage(langPack["vertex-name-space-text"], 2000)
+      if (key.length === 1 && key.toUpperCase() !== key.toLowerCase() ||
+          ["\"", "'"].includes(key)) {
+        // letter
+      } else if (isDigit(key)) {
+        if (val.length === 0) {
+          popupMessage(langPack["vertex-name-digit-text"], 2000)
+          save = false
+        }
+      } else if (key === " ") {
+        if (val.length === 0) {
+          popupMessage(langPack["vertex-name-space-text"], 2000)
+          save = false
+        }
+      } else if (key === "_") {
+        popupMessage(langPack["vertex-name-space-text"])
         save = false
-      }
-    } else if (key === "_") {
-      popupMessage(langPack["vertex-name-space-text"])
-      save = false
-    } else if (key === "-") {
-      if (val.length === 0) {
-        popupMessage(langPack["vertex-name-dash-text"], 2000)
+      } else if (key === "-") {
+        if (val.length === 0) {
+          popupMessage(langPack["vertex-name-dash-text"], 2000)
+          save = false
+        }
+      } else if (key === "`") {
+        popupMessage(langPack["vertex-name-backtick-text"], 2000)
         save = false
-      }
-    } else if (key === "`") {
-      popupMessage(langPack["vertex-name-backtick-text"], 2000)
-      save = false
-    } else if (key === "Enter") {
-      event.preventDefault()
-      event.target.blur()
-      console.log("Preventing default behavior and returning")
-      return
-    } else if (key === "Backspace") {
-      console.log(`Backspace is pressed: val is "${val}" is Control Down = ${ctrlDown}`)
-      hidePopup()
-      if (event.target.cols > 2) {
-        event.target.cols = event.target.cols - 1
-        if (val.length <= 4)
+      } else if (key === "Enter") {
+        event.preventDefault()
+        event.target.blur()
+        console.log("Preventing default behavior and returning")
+        return
+      } else if (key === "Backspace") {
+        console.log(`Backspace is pressed: val is "${val}" is Control Down = ${ctrlDown}`)
+        hidePopup()
+        if (event.target.cols > 2) {
+          event.target.cols = event.target.cols - 1
+          if (val.length <= 4)
+            if (event.target.classList.contains("up"))
+              event.target.classList.remove("up")
+        }
+        if (ctrlDown && !val.includes(" ")) {
+          event.target.cols = 2
           if (event.target.classList.contains("up"))
             event.target.classList.remove("up")
-      }
-      if (ctrlDown && !val.includes(" ")) {
-        event.target.cols = 2
-        if (event.target.classList.contains("up"))
-          event.target.classList.remove("up")
-      }
-      return
-    } else if (key === "Tab") {
-      return
-    } else if (val.length === 35) {
-      popupMessage(langPack["vertex-name-length-text"].replace("${}", `${35}`), 2000)
-      save = false
-    } else {
-      save = false
-      popupMessage(langPack["vertex-name-incorrect-symbol-text"], 1000)
-    }
-
-    if (!save) {
-      event.preventDefault()
-    } else {
-      log(`Adding the symbol to the end, length = ${val.length}, cols = ${event.target.cols}`)
-      if (isNameAlreadyPresent(val + key)) {
-        event.target.classList.add("warning")
-        popupMessage(langPack["name-is-already-present-text"], 1500)
+        }
+        return
+      } else if (key === "Tab") {
+        return
+      } else if (val.length === 35) {
+        popupMessage(langPack["vertex-name-length-text"].replace("${}", `${35}`), 2000)
+        save = false
       } else {
-        if (event.target.classList.contains("warning"))
-          event.target.classList.remove("warning")
-        hidePopup()
+        save = false
+        popupMessage(langPack["vertex-name-incorrect-symbol-text"], 1000)
       }
-      if (val.length - 1 >= event.target.cols) {
-        console.log("Adding one col")
-        event.target.cols = event.target.cols + 1
-        if (!event.target.classList.contains("up"))
-          event.target.classList.add("up")
+
+      if (!save) {
+        event.preventDefault()
+      } else {
+        log(`Adding the symbol to the end, length = ${val.length}, cols = ${event.target.cols}`)
+        if (isNameAlreadyPresent(val + key)) {
+          event.target.classList.add("warning")
+          popupMessage(langPack["name-is-already-present-text"], 1500)
+        } else {
+          if (event.target.classList.contains("warning"))
+            event.target.classList.remove("warning")
+          hidePopup()
+        }
+        if (val.length - 1 >= event.target.cols) {
+          console.log("Adding one col")
+          event.target.cols = event.target.cols + 1
+          if (!event.target.classList.contains("up"))
+            event.target.classList.add("up")
+        }
       }
-    }
-  })
+    })
+  }
 }
 
 function drawNode(x, y) {
@@ -324,6 +336,12 @@ function drawNode(x, y) {
   return nodeEl
 }
 
+function isComplementary(from, to) {
+  let toNode = graph.nodes.find(node => node.id == to)
+  let fromNode = toNode.pointsTo.find(node => node.id == from)
+  return fromNode !== undefined
+}
+
 function drawEdge(x1, y1, x2, y2, id1, id2) {
   log(`Adding edge (${x1}, ${y1}) ${isDirected ? '' : '<'}-> (${x2}, ${y2})`)
   const lineEl = document.createElement("div")
@@ -360,8 +378,25 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
     arrowEl.style.right = `0`
     arrowEl.style.top = `-${arrowHalfHeight}px`
     arrowEl.addEventListener("dblclick", () => removeLine(lineEl))
+    arrowEl.addEventListener("click", event => {
+      if (graph.directed) {
+        event.target.parentNode.children[1].focus()
+      }
+    })
     lineEl.appendChild(arrowEl)
   }
+  lineEl.addEventListener("click", event => {
+    if (graph.weighted) {
+      if (graph.directed) {
+        event.target.children[1].focus()
+      } else {
+        event.target.children[0].focus()
+      }
+    }
+  })
+  lineEl.addEventListener("dblclick", (event) => removeLine(event.target))
+  lineEl.classList.add("edge")
+  boardEl.appendChild(lineEl)
   if (graph.weighted) {
     const weightInputEl = document.createElement("textarea")
     weightInputEl.classList.add("weight")
@@ -371,19 +406,25 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
     weightInputEl.cols = 2
     weightInputEl.innerText = '1'
     console.log(`Angel of the edge is ${angel}`)
+    let complementary = graph.directed && isComplementary(id1, id2)
+
     if (angel > Math.PI / 2) {
-      weightInputEl.style.transform = "rotate(180deg) translateY(-10%)";
+      if (complementary) {
+        weightInputEl.style.transform = "rotate(180deg) translateY(110%)"
+      } else {
+        weightInputEl.style.transform = "rotate(180deg) translateY(-10%)"
+      }
+    } else if (complementary) {
+      weightInputEl.style.transform = "translateY(10%)"
     }
     weightInputEl.addEventListener("keydown", numberInputHandler)
-    weightInputEl.addEventListener("click", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
+    weightInputEl.addEventListener("focusin", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
     weightInputEl.addEventListener("focusout", (event) => {
       saveWeight(event.target.value.replaceAll(" ", ''), event.target.id)
     })
     lineEl.appendChild(weightInputEl)
+    weightInputEl.focus();
   }
-  lineEl.addEventListener("dblclick", (event) => removeLine(event.target))
-  lineEl.classList.add("edge")
-  boardEl.appendChild(lineEl)
 }
 
 function notCollideWithOthers(x, y) {
