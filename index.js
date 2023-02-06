@@ -150,21 +150,18 @@ document.addEventListener("keyup", event => event.key === "Control" ? ctrlDown =
 function addName(nodeEl) {
   console.log("Adding the name...")
   console.log(nodeEl.innerHTML)
-  let index = ""
   let isTextArea = false
   if (nodeEl.children.length > 0) {
     console.log(`The tag name of the children is ${nodeEl.children[0].tagName}`)
-    if (nodeEl.children[0].tagName !== "TEXTAREA") {
-      console.log(nodeEl.children[0])
-      index = nodeEl.children[0].innerText
-    } else {
+    if (nodeEl.children[0].tagName === "TEXTAREA") {
       console.log("It is a text area!")
       nodeEl.children[0].focus()
       isTextArea = true
     }
   }
   if (!isTextArea) {
-    let name = nodeEl.innerText
+    let name = nodeEl.innerText.replace("\n", "")
+    console.log(`Inner text is ${name}`)
     nodeEl.innerText = ""
     let nameInputEl = document.createElement("textarea")
     nameInputEl.classList.add("name")
@@ -263,6 +260,11 @@ function addName(nodeEl) {
   }
 }
 
+let coordinates = {x: -100, y: -100}
+let isMouseDown = false
+let moveNode = null
+let enableMovingTimer
+
 function drawNode(x, y) {
   let node = {
     id: nodeNumber++,
@@ -278,37 +280,84 @@ function drawNode(x, y) {
   nodeEl.classList.add('collapse')
   nodeEl.style.left = `${x - nodeRadius}px`
   nodeEl.style.top = `${y - nodeRadius}px`
-  nodeEl.addEventListener("click", (event) => {
-    if (ctrlDown) {
-      addName(nodeEl)
-    } else {
-      if (activeNodeID === -1) {
-        // there is no active node
-        nodeEl.classList.add("active")
-        activeNodeID = parseInt(nodeEl.id)
-      } else if (activeNodeID == nodeEl.id) {
-        // deactivate current node
-        nodeEl.classList.remove("active")
-        activeNodeID = -1
+  // nodeEl.addEventListener("click", (event) => {
+  //   if (ctrlDown) {
+  //     addName(nodeEl)
+  //   } else {
+  //     if (activeNodeID === -1) {
+  //       // there is no active node
+  //       nodeEl.classList.add("active")
+  //       activeNodeID = parseInt(nodeEl.id)
+  //     } else if (activeNodeID == nodeEl.id) {
+  //       // deactivate current node
+  //       nodeEl.classList.remove("active")
+  //       activeNodeID = -1
+  //     } else {
+  //       // add edge between active node and current node
+  //       const from = graph.nodes.find(node => node.id === activeNodeID)
+  //       const to = graph.nodes.find(node => node.id == event.target.id)
+  //       // edge already exists
+  //       if (from.pointsTo.find(node => node.id == to.id) ||
+  //           !isDirected && to.pointsTo.find(node => node.id == from.id)) {
+  //         log("Edge already exists")
+  //       } else {
+  //         from.pointsTo.push({id: to.id, weight: 1})
+  //         if (!isDirected)
+  //           to.pointsTo.push({id: from.id, weight: 1})
+  //         drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
+  //         log(JSON.stringify(graph))
+  //       }
+  //       document.getElementById(`${activeNodeID}`).classList.remove("active")
+  //       activeNodeID = -1
+  //     }
+  //     log(`ActiveID is ${activeNodeID}`)
+  //   }
+  // })
+  nodeEl.addEventListener("mousedown", (event) => {
+    isMouseDown = true
+    coordinates = {x: event.offsetX, y: event.offsetY}
+    enableMovingTimer = setTimeout(() => {
+      moveNode = event.target
+      moveNode.classList.add("move")
+      let node = graph.nodes.find(node => node.id == moveNode.id)
+      node.x = -100
+      node.y = -100
+    }, 200);
+    console.log(JSON.stringify(coordinates))
+  })
+  nodeEl.addEventListener("mouseup", (event) => {
+    if (coordinates.x === event.offsetX && coordinates.y === event.offsetY) {
+      if (ctrlDown) {
+        addName(nodeEl)
       } else {
-        // add edge between active node and current node
-        const from = graph.nodes.find(node => node.id === activeNodeID)
-        const to = graph.nodes.find(node => node.id == event.target.id)
-        // edge already exists
-        if (from.pointsTo.find(node => node.id == to.id) ||
-            !isDirected && to.pointsTo.find(node => node.id == from.id)) {
-          log("Edge already exists")
+        if (activeNodeID === -1) {
+          // there is no active node
+          nodeEl.classList.add("active")
+          activeNodeID = parseInt(nodeEl.id)
+        } else if (activeNodeID == nodeEl.id) {
+          // deactivate current node
+          nodeEl.classList.remove("active")
+          activeNodeID = -1
         } else {
-          from.pointsTo.push({id: to.id, weight: 1})
-          if (!isDirected)
-            to.pointsTo.push({id: from.id, weight: 1})
-          drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
-          log(JSON.stringify(graph))
+          // add edge between active node and current node
+          const from = graph.nodes.find(node => node.id === activeNodeID)
+          const to = graph.nodes.find(node => node.id == event.target.id)
+          // edge already exists
+          if (from.pointsTo.find(node => node.id == to.id) ||
+              !isDirected && to.pointsTo.find(node => node.id == from.id)) {
+            log("Edge already exists")
+          } else {
+            from.pointsTo.push({id: to.id, weight: 1})
+            if (!isDirected)
+              to.pointsTo.push({id: from.id, weight: 1})
+            drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
+            log(JSON.stringify(graph))
+          }
+          document.getElementById(`${activeNodeID}`).classList.remove("active")
+          activeNodeID = -1
         }
-        document.getElementById(`${activeNodeID}`).classList.remove("active")
-        activeNodeID = -1
+        log(`ActiveID is ${activeNodeID}`)
       }
-      log(`ActiveID is ${activeNodeID}`)
     }
   })
   nodeEl.addEventListener("dblclick", (event) => {
@@ -342,7 +391,7 @@ function isComplementary(from, to) {
   return fromNode !== undefined
 }
 
-function drawEdge(x1, y1, x2, y2, id1, id2) {
+function drawEdge(x1, y1, x2, y2, id1, id2, weight = 1) {
   log(`Adding edge (${x1}, ${y1}) ${isDirected ? '' : '<'}-> (${x2}, ${y2})`)
   const lineEl = document.createElement("div")
   lineEl.id = `${id1}-${id2}`
@@ -404,7 +453,7 @@ function drawEdge(x1, y1, x2, y2, id1, id2) {
     weightInputEl.id = `${lineEl.id}-w`
     weightInputEl.rows = 1
     weightInputEl.cols = 2
-    weightInputEl.innerText = '1'
+    weightInputEl.innerText = weight
     console.log(`Angel of the edge is ${angel}`)
     let complementary = graph.directed && isComplementary(id1, id2)
 
@@ -438,23 +487,86 @@ function notCollideWithOthers(x, y) {
   return true
 }
 
-boardEl.addEventListener("click", (event) => {
+let boardCoordinates = {x: -100, y: -100}
+
+// boardEl.addEventListener("click", (event) => {
+//   if (event.target.id === "board") {
+//     const x = event.offsetX
+//     const y = event.offsetY
+//     log(`Click on board: x=${x}, y=${y}`)
+//     if (x > 13 && y > 13 &&
+//         x < boardWidth - 13 && y < boardHeight - 13 &&
+//         notCollideWithOthers(x, y)) {
+//       if (graph.nodes.length === 0) {
+//         disableProperties()
+//         graph.directed = isDirected
+//         graph.weighted = isWeighted
+//       }
+//       const nodeEl = drawNode(x, y)
+//       setTimeout(() => {
+//         nodeEl.classList.remove("collapse")
+//       }, 10);
+//     }
+//   }
+// })
+
+function isProperPositionOnBoard(x, y) {
+  return x > 13 && y > 13 &&
+      x < boardWidth - 13 && y < boardHeight - 13 &&
+      notCollideWithOthers(x, y)
+}
+
+boardEl.addEventListener("mousedown", event => {
   if (event.target.id === "board") {
-    const x = event.offsetX
-    const y = event.offsetY
-    log(`Click on board: x=${x}, y=${y}`)
-    if (x > 13 && y > 13 && 
-        x < boardWidth - 13 && y < boardHeight - 13 &&
-        notCollideWithOthers(x, y)) {
-      if (graph.nodes.length === 0) {
-        disableProperties()
-        graph.directed = isDirected
-        graph.weighted = isWeighted
+    boardCoordinates = {x: event.offsetX, y: event.offsetY}
+    console.log(JSON.stringify(boardCoordinates))
+  }
+})
+boardEl.addEventListener("mousemove", event => {
+  if (isMouseDown && event.target.id === "board") {
+    // move node and adjacent nodes
+    if (isMouseDown) {
+      console.log({x: event.offsetX, y: event.offsetY})
+      let x = event.offsetX
+      let y = event.offsetY
+      if (isProperPositionOnBoard(x, y)) {
+        moveNode.style.top = `${y - nodeRadius}px`
+        moveNode.style.left = `${x - nodeRadius}px`
       }
-      const nodeEl = drawNode(x, y)
-      setTimeout(() => {
-        nodeEl.classList.remove("collapse")
-      }, 10);
     }
+  }
+})
+boardEl.addEventListener("mouseup", event => {
+  if (boardCoordinates.x === event.offsetX && boardCoordinates.y === event.offsetY) {
+    if (event.target.id === "board") {
+      const x = event.offsetX
+      const y = event.offsetY
+      log(`Click on board: x=${x}, y=${y}`)
+      if (isProperPositionOnBoard(x, y)) {
+        if (graph.nodes.length === 0) {
+          disableProperties()
+          graph.directed = isDirected
+          graph.weighted = isWeighted
+        }
+        const nodeEl = drawNode(x, y)
+        setTimeout(() => {
+          nodeEl.classList.remove("collapse")
+        }, 10);
+      }
+    }
+  } else {
+    clearTimeout(enableMovingTimer)
+    if (moveNode !== null) {
+      if (moveNode.classList.contains("move"))
+        moveNode.classList.remove("move")
+      let x = event.offsetX
+      let y = event.offsetY
+      let node = graph.nodes.find(node => node.id == moveNode.id)
+      node.x = x;
+      node.y = y;
+      moveNode = null
+    }
+    isMouseDown = false
+    console.log(JSON.stringify({x: event.offsetX, y: event.offsetY}))
   }
 })

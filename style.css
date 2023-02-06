@@ -140,6 +140,10 @@ main {
   /* box-shadow: 0 0 2px rgba(167, 167, 20, 0.3); */
 }
 
+.node.move {
+  pointer-events: none;
+}
+
 .edge {
   position: absolute;
   display: flex;
