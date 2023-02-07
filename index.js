@@ -9,6 +9,9 @@ import {
   saveName
 } from "./lib/utils.js";
 
+// TODO: disable selection of text on the graph
+// TODO: deal with conversion of numbers from scientific notation on weight (e.x. 8.9e+6 -> 8900000)
+
 const boardEl = document.getElementById("board")
 const propsEl = document.querySelector(".board-con > .props")
 const weightBtnEl = document.querySelector(".weighted-con button")
@@ -459,17 +462,21 @@ function drawEdge(x1, y1, x2, y2, id1, id2, weight = 1) {
     weightInputEl.rows = 1
     weightInputEl.cols = 2
     weightInputEl.innerText = weight
+    weightInputEl.dataset.transform = '0'
     console.log(`Angel of the edge is ${angel}`)
     let complementary = graph.directed && isComplementary(id1, id2)
 
     if (angel > Math.PI / 2) {
       if (complementary) {
         weightInputEl.style.transform = "rotate(180deg) translateY(110%)"
+        weightInputEl.dataset.transform = '3'
       } else {
         weightInputEl.style.transform = "rotate(180deg) translateY(-10%)"
+        weightInputEl.dataset.transform = '1'
       }
     } else if (complementary) {
       weightInputEl.style.transform = "translateY(10%)"
+      weightInputEl.dataset.transform = '2'
     }
     weightInputEl.addEventListener("keydown", numberInputHandler)
     weightInputEl.addEventListener("focusin", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
@@ -518,6 +525,57 @@ boardEl.addEventListener("mousemove", event => {
       if (isProperPositionOnBoard(x, y)) {
         moveNode.style.top = `${y - nodeRadius}px`
         moveNode.style.left = `${x - nodeRadius}px`
+        for (let i = 0; i < edgesToMove.length; ++i) {
+          let supNode = supportiveNodes[i]
+          let edge = edgesToMove[i]
+          let x1, x2, y1, y2
+          if ("x1" in supNode) {
+            x1 = supNode.x1
+            y1 = supNode.y1
+            x2 = x
+            y2 = y
+          } else {
+            x1 = x
+            y1 = y
+            x2 = supNode.x2
+            y2 = supNode.y2
+          }
+
+          // moving an edge
+          const length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
+          edge.style.width = `${length - 2 * nodeRadius - 2.5}px`
+          edge.style.left = `${(x1 + x2) / 2.0 + 1.7}px`
+          edge.style.top = `${(y1 + y2) / 2.0 + 1}px`
+          const v1 = [1, 0]
+          const v2 = [x2 - x1, y2 - y1]
+          const angel = Math.acos((v2[0]) / Math.sqrt(Math.pow(v2[0], 2) + Math.pow(v2[1], 2)))
+          edge.style.transform = `translate(-50%) rotate(${y2 > y1 ? angel : -angel}rad)`
+
+          // change the weight position if needed
+          if (graph.weighted) {
+            let weightEl = edge.children[graph.directed ? 1 : 0]
+            let transform = weightEl.dataset.transform
+            console.log("Transform type: " + transform)
+            console.log(angel + "rad")
+            if (angel > Math.PI / 2) {
+              if (transform === '0') {
+                weightEl.style.transform = "rotate(180deg) translateY(-10%)"
+                weightEl.dataset.transform = '1'
+              } else if (transform === '2') {
+                weightEl.style.transform = "rotate(180deg) translateY(110%)"
+                weightEl.dataset.transform = '3'
+              }
+            } else {
+              if (transform === '1') {
+                weightEl.style.transform = "translateY(-110%)"
+                weightEl.dataset.transform = '0'
+              } else if (transform === '3') {
+                weightEl.style.transform = "translateY(10%)"
+                weightEl.dataset.transform = '2'
+              }
+            }
+          }
+        }
       }
     }
   }
