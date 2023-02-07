@@ -264,6 +264,8 @@ let coordinates = {x: -100, y: -100}
 let isMouseDown = false
 let moveNode = null
 let enableMovingTimer
+let edgesToMove = []
+let supportiveNodes = []
 
 function drawNode(x, y) {
   let node = {
@@ -280,39 +282,6 @@ function drawNode(x, y) {
   nodeEl.classList.add('collapse')
   nodeEl.style.left = `${x - nodeRadius}px`
   nodeEl.style.top = `${y - nodeRadius}px`
-  // nodeEl.addEventListener("click", (event) => {
-  //   if (ctrlDown) {
-  //     addName(nodeEl)
-  //   } else {
-  //     if (activeNodeID === -1) {
-  //       // there is no active node
-  //       nodeEl.classList.add("active")
-  //       activeNodeID = parseInt(nodeEl.id)
-  //     } else if (activeNodeID == nodeEl.id) {
-  //       // deactivate current node
-  //       nodeEl.classList.remove("active")
-  //       activeNodeID = -1
-  //     } else {
-  //       // add edge between active node and current node
-  //       const from = graph.nodes.find(node => node.id === activeNodeID)
-  //       const to = graph.nodes.find(node => node.id == event.target.id)
-  //       // edge already exists
-  //       if (from.pointsTo.find(node => node.id == to.id) ||
-  //           !isDirected && to.pointsTo.find(node => node.id == from.id)) {
-  //         log("Edge already exists")
-  //       } else {
-  //         from.pointsTo.push({id: to.id, weight: 1})
-  //         if (!isDirected)
-  //           to.pointsTo.push({id: from.id, weight: 1})
-  //         drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
-  //         log(JSON.stringify(graph))
-  //       }
-  //       document.getElementById(`${activeNodeID}`).classList.remove("active")
-  //       activeNodeID = -1
-  //     }
-  //     log(`ActiveID is ${activeNodeID}`)
-  //   }
-  // })
   nodeEl.addEventListener("mousedown", (event) => {
     isMouseDown = true
     coordinates = {x: event.offsetX, y: event.offsetY}
@@ -322,10 +291,46 @@ function drawNode(x, y) {
       let node = graph.nodes.find(node => node.id == moveNode.id)
       node.x = -100
       node.y = -100
+      // init list of edges to also move
+      if (graph.directed) {
+        for (const n of node.pointsTo) {
+          edgesToMove.push(document.getElementById(`${node.id}-${n.id}`))
+          let nod = graph.nodes.find(nd => nd.id == n.id)
+          let x2 = nod.x
+          let y2 = nod.y
+          supportiveNodes.push({ x2, y2 })
+        }
+        for (const n of graph.nodes)
+          if (n.id != node.id)
+            for (const edge of n.pointsTo)
+              if (edge.id == node.id) {
+                console.log(JSON.stringify(n))
+                edgesToMove.push(document.getElementById(`${n.id}-${node.id}`))
+                let x1 = n.x
+                let y1 = n.y
+                supportiveNodes.push({ x1, y1 })
+              }
+      } else
+        for (const n of node.pointsTo) {
+          let edge = document.getElementById(`${node.id}-${n.id}`)
+          let nod = graph.nodes.find(nd => nd.id == n.id)
+          if (edge) {
+            edgesToMove.push(edge)
+            let x2 = nod.x
+            let y2 = nod.y
+            supportiveNodes.push({ x2, y2 })
+          } else {
+            edgesToMove.push(document.getElementById(`${n.id}-${node.id}`))
+            let x1 = nod.x;
+            let y1 = nod.y;
+            supportiveNodes.push({ x1, y1 })
+          }
+        }
     }, 200);
     console.log(JSON.stringify(coordinates))
   })
   nodeEl.addEventListener("mouseup", (event) => {
+    clearTimeout(enableMovingTimer)
     if (coordinates.x === event.offsetX && coordinates.y === event.offsetY) {
       if (ctrlDown) {
         addName(nodeEl)
@@ -489,27 +494,6 @@ function notCollideWithOthers(x, y) {
 
 let boardCoordinates = {x: -100, y: -100}
 
-// boardEl.addEventListener("click", (event) => {
-//   if (event.target.id === "board") {
-//     const x = event.offsetX
-//     const y = event.offsetY
-//     log(`Click on board: x=${x}, y=${y}`)
-//     if (x > 13 && y > 13 &&
-//         x < boardWidth - 13 && y < boardHeight - 13 &&
-//         notCollideWithOthers(x, y)) {
-//       if (graph.nodes.length === 0) {
-//         disableProperties()
-//         graph.directed = isDirected
-//         graph.weighted = isWeighted
-//       }
-//       const nodeEl = drawNode(x, y)
-//       setTimeout(() => {
-//         nodeEl.classList.remove("collapse")
-//       }, 10);
-//     }
-//   }
-// })
-
 function isProperPositionOnBoard(x, y) {
   return x > 13 && y > 13 &&
       x < boardWidth - 13 && y < boardHeight - 13 &&
@@ -526,6 +510,8 @@ boardEl.addEventListener("mousemove", event => {
   if (isMouseDown && event.target.id === "board") {
     // move node and adjacent nodes
     if (isMouseDown) {
+      console.log(JSON.stringify(edgesToMove))
+      console.log(JSON.stringify(supportiveNodes))
       console.log({x: event.offsetX, y: event.offsetY})
       let x = event.offsetX
       let y = event.offsetY
@@ -567,6 +553,8 @@ boardEl.addEventListener("mouseup", event => {
       moveNode = null
     }
     isMouseDown = false
+    edgesToMove = []
+    supportiveNodes = []
     console.log(JSON.stringify({x: event.offsetX, y: event.offsetY}))
   }
 })
