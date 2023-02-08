@@ -73,14 +73,35 @@
         </div>
       </header>
       <div class="board-con">
-        <div class="props">
-          <div class="weighted-con">
-            <span id="weighted-label-text">Незважений</span>
-            <button class="switch"></button>
+        <div class="toolbox">
+          <div class="props">
+            <div class="weighted-con">
+              <span id="weighted-label-text">Незважений</span>
+              <button class="switch"></button>
+            </div>
+            <div class="directed-con">
+              <span id="directed-label-text">Неорієнтований</span>
+              <button class="switch"></button>
+            </div>
           </div>
-          <div class="directed-con">
-            <span id="directed-label-text">Неорієнтований</span>
-            <button class="switch"></button>
+          <span id="name">Шрек це наш герой і і і і ііііііі</span>
+          <div class="general">
+            <div class="add-name">
+              <input type="text" name="graph-name" id="graph-name" placeholder="Enter graph name">
+              <button id="add-name-btn">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+            <button id="view-edit">
+              <i class="fa-solid fa-eye"></i>
+              <!--            <i class="fa-solid fa-pen-to-square"></i>-->
+            </button>
+            <button id="clear">
+              <i class="fa-solid fa-broom"></i>
+            </button>
+            <button id="save">
+              <i class="fa-solid fa-bookmark"></i>
+            </button>
           </div>
         </div>
         <div id="board">

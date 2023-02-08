@@ -22,7 +22,6 @@ main {
 .board-con header {
   flex: 1;
   display: flex;
-  flex-flow: column;
   border: 2px solid goldenrod;
 }
 
@@ -64,10 +63,17 @@ main {
   align-self: center;
 }
 
-.board-con button:not(#popup) {
+.board-con button:not(#popup, #view-edit, #save, #add-name-btn) {
   width: 1rem;
   align-self: center;
   max-height: 1rem;
+}
+
+.toolbox {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
 }
 
 .props {
@@ -113,6 +119,75 @@ main {
   border-radius: 50%;
   background-color: gray;
   transition: all 200ms ease-in-out;
+}
+
+.general {
+  display: flex;
+  height: 60%;
+  align-items: center;
+  gap: 20px;
+}
+
+.general .add-name {
+  display: flex;
+  gap: 5px;
+}
+
+#view-edit, #clear, #save {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+#save {
+  padding-top: 3px;
+}
+
+#add-name-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  height: 27px;
+  width: 27px;
+  border: 1px solid lightslategray;
+  cursor: pointer;
+  color: #5d5d5d;
+}
+
+#name {
+  border: 1px solid goldenrod;
+  width: auto;
+  max-width: 500px;
+}
+
+#add-name-btn.active {
+  transform: rotate(90deg);
+  color: #418303;
+  border-color: forestgreen;
+  background-color: #b1f8b1;
+}
+
+.general .add-name input {
+  border-radius: 4px;
+  width: 0;
+  padding: 0;
+  border: none;
+  transition: width 500ms ease-in-out,
+              padding 300ms linear;
+}
+
+.general .add-name input.active {
+  border: 1px solid lightslategray;
+  width: 160px;
+  padding: 4px 6px;
+  transition: width 500ms ease-in-out,
+              padding 300ms linear;
+}
+
+.general .add-name input:focus {
+  outline-color: forestgreen;
 }
 
 #board {
@@ -247,6 +322,11 @@ main {
   transition: opacity 500ms ease-in-out,
               transform 500ms ease-in-out;
   z-index: 100;
+}
+
+#view-edit {
+  justify-self: end;
+  display: flex;
 }
 
 #popup.alert {

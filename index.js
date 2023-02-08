@@ -8,14 +8,18 @@ import {
   popupMessage,
   saveName
 } from "./lib/utils.js";
+import languages from "./assets/data/languages.js";
 
 // TODO: disable selection of text on the graph
 // TODO: deal with conversion of numbers from scientific notation on weight (e.x. 8.9e+6 -> 8900000)
 
 const boardEl = document.getElementById("board")
-const propsEl = document.querySelector(".board-con > .props")
-const weightBtnEl = document.querySelector(".weighted-con button")
-const directedBtnEl = document.querySelector(".directed-con button")
+const propsEl = document.querySelector(".board-con > .toolbox > .props")
+const addNameBtn = document.getElementById("add-name-btn")
+const nameEl = document.getElementById("name")
+const inputNameEl = document.querySelector(".general .add-name input")
+const weightBtn = document.querySelector(".weighted-con button")
+const directedBtn = document.querySelector(".directed-con button")
 const languageEl = document.getElementById("language")
 
 // TEMPORARY
@@ -40,6 +44,8 @@ document.getElementById("download-btn").addEventListener("click", (event) => {
 
   download(filename, text)
 }, false)
+
+console.log(window.getComputedStyle(nameEl).width)
 
 // UTILS
 function saveWeight(useInput, edgeID) {
@@ -80,13 +86,15 @@ export let graph = {
   weighted: false,
   nodes: [],
 }
-let language = "ua",
+let language = localStorage.getItem("lang") || "ua",
   nodeNumber = 0,
   isDirected = false,
   isWeighted = false,
   activeNodeID = -1,
   boardHeight = boardEl.getBoundingClientRect().height,
   boardWidth = boardEl.getBoundingClientRect().width
+languageEl.value = language
+translate()
 const { log } = console,
   nodeRadius = 0.7 * 16,
   arrowHalfHeight = 10
@@ -99,31 +107,40 @@ window.addEventListener("resize", () => {
   log(`Board is resized: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
 })
 
-languageEl.addEventListener("change", (event) => {
-  language = languageEl.value
-  log("Language is changed to " + language)
+addNameBtn.addEventListener("click", () => inputNameEl.classList.toggle("active"))
+
+function translate() {
+
+  console.log("Language is changed to " + language)
   langPack = langPacks[language]
 
   document.getElementById("draw-your-graph-text").innerText = langPack["draw-your-graph-text"]
   document.getElementById("choose-language-text").innerText = langPack["choose-language-text"]
   document.getElementById("weighted-label-text").innerText = langPack["weighted-label-text"][isWeighted ? 1 : 0]
   document.getElementById("directed-label-text").innerText = langPack["directed-label-text"][isDirected ? 1 : 0]
+}
+
+languageEl.addEventListener("change", (event) => {
+
+  language = languageEl.value
+  localStorage.setItem("lang", language)
+  translate()
 })
 
 function disableProperties() {
-  weightBtnEl.disabled = "true"
-  directedBtnEl.disabled = "true"
+  weightBtn.disabled = "true"
+  directedBtn.disabled = "true"
   propsEl.style.opacity = "0.6"
   nodeNumber = 0
 }
 
 function enableProperties() {
-  weightBtnEl.disabled = ""
-  directedBtnEl.disabled = ""
+  weightBtn.disabled = ""
+  directedBtn.disabled = ""
   propsEl.style.opacity = "1"
 }
 
-weightBtnEl.addEventListener("click", (event) => {
+weightBtn.addEventListener("click", (event) => {
   if (event.target.classList.contains("active")) {
     isWeighted = false
     event.target.classList.remove("active")
@@ -134,7 +151,7 @@ weightBtnEl.addEventListener("click", (event) => {
   document.getElementById("weighted-label-text").innerText = langPack["weighted-label-text"][isWeighted ? 1 : 0]
 })
 
-directedBtnEl.addEventListener("click", (event) => {
+directedBtn.addEventListener("click", (event) => {
   if (event.target.classList.contains("active")) {
     isDirected = false
     event.target.classList.remove("active")
