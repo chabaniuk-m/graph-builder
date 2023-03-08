@@ -8,11 +8,11 @@ import {
   popupMessage,
   saveName
 } from "./lib/utils.js";
-import languages from "./assets/data/languages.js";
 
 // TODO: disable selection of text on the graph
 // TODO: deal with conversion of numbers from scientific notation on weight (e.x. 8.9e+6 -> 8900000)
 
+// board.js
 const boardEl = document.getElementById("board")
 const propsEl = document.querySelector(".board-con > .toolbox > .props")
 const addNameBtn = document.getElementById("add-name-btn")
@@ -20,14 +20,10 @@ const nameEl = document.getElementById("name")
 const inputNameEl = document.querySelector(".general .add-name input")
 const weightBtn = document.querySelector(".weighted-con button")
 const directedBtn = document.querySelector(".directed-con button")
+// page.js
 const languageEl = document.getElementById("language")
 
-// TEMPORARY
-console.log(`Max positive integer len: ${('' + Number.MAX_SAFE_INTEGER).length}, the number is ${Number.MAX_SAFE_INTEGER}`)
-console.log(`Max negative integer len: ${('' + Number.MIN_SAFE_INTEGER).length}, the number is ${Number.MIN_SAFE_INTEGER}`)
-console.log(`Max positive number len: ${('' + Number.MAX_VALUE).length}, the number is ${Number.MAX_VALUE}`)
-console.log(`Max negative number len: ${('' + Number.MIN_VALUE).length}, the number is ${Number.MIN_VALUE}`)
-
+// TEMPORARY \\
 function download(filename, text) {
   let element = document.createElement("a")
   element.style.display = "none"
@@ -45,14 +41,17 @@ document.getElementById("download-btn").addEventListener("click", (event) => {
   download(filename, text)
 }, false)
 
-console.log(window.getComputedStyle(nameEl).width)
+// TEMPORARY //
 
-// UTILS
+
+console.debug("Window width " + window.getComputedStyle(nameEl).width)
+
+// graph/utils.js
 function saveWeight(useInput, edgeID) {
-  console.log(`Saving the weight ${useInput} on ${edgeID}`)
+  console.debug(`Saving the weight ${useInput} on ${edgeID}`)
   let weight = NaN
   let inputEl = document.getElementById(edgeID)
-  log(inputEl)
+  console.debug(inputEl)
   if (isNaN(useInput) || useInput.length === 0) {
     weight = 0
     inputEl.value = '0'
@@ -81,37 +80,41 @@ function saveWeight(useInput, edgeID) {
 }
 
 export let langPack = langPacks["ua"]
+
+// graph/graph.js
 export let graph = {
   directed: false,
   weighted: false,
   nodes: [],
 }
-let language = localStorage.getItem("lang") || "ua",
-  nodeNumber = 0,
-  isDirected = false,
-  isWeighted = false,
-  activeNodeID = -1,
-  boardHeight = boardEl.getBoundingClientRect().height,
-  boardWidth = boardEl.getBoundingClientRect().width
+let nodeNumber = 0
+let isDirected = false
+let isWeighted = false
+let activeNodeID = -1
+let nodeRadius = 0.7 * 16
+const arrowHalfHeight = 10
+
+// leave here
+let language = localStorage.getItem("lang") || "ua"
 languageEl.value = language
 translate()
-const { log } = console,
-  nodeRadius = 0.7 * 16,
-  arrowHalfHeight = 10
+let boardHeight = boardEl.getBoundingClientRect().height
+let boardWidth = boardEl.getBoundingClientRect().width
 
-log(`Board size is: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
+console.debug(`Board size is: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
 
 window.addEventListener("resize", () => {
   boardHeight = boardEl.getBoundingClientRect().height
   boardWidth = boardEl.getBoundingClientRect().width
-  log(`Board is resized: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
+  console.debug(`Board is resized: ${Math.round(boardWidth)}x${Math.round(boardHeight)}`)
 })
 
 addNameBtn.addEventListener("click", () => inputNameEl.classList.toggle("active"))
 
+// leave here
 function translate() {
 
-  console.log("Language is changed to " + language)
+  console.info("Language is changed to " + language)
   langPack = langPacks[language]
 
   document.getElementById("draw-your-graph-text").innerText = langPack["draw-your-graph-text"]
@@ -127,6 +130,7 @@ languageEl.addEventListener("change", (event) => {
   translate()
 })
 
+// board.js
 function disableProperties() {
   weightBtn.disabled = "true"
   directedBtn.disabled = "true"
@@ -140,6 +144,7 @@ function enableProperties() {
   propsEl.style.opacity = "1"
 }
 
+// board.js
 weightBtn.addEventListener("click", (event) => {
   if (event.target.classList.contains("active")) {
     isWeighted = false
@@ -162,26 +167,28 @@ directedBtn.addEventListener("click", (event) => {
   document.getElementById("directed-label-text").innerText = langPack["directed-label-text"][isDirected ? 1 : 0]
 })
 
+// board.js
 let ctrlDown = false
 
 document.addEventListener("keydown", event => event.key === "Control" ? ctrlDown = true : undefined)
 document.addEventListener("keyup", event => event.key === "Control" ? ctrlDown = false : undefined)
 
+// graph.utils
 function addName(nodeEl) {
-  console.log("Adding the name...")
-  console.log(nodeEl.innerHTML)
+  console.debug("Adding the name...")
+  console.debug(nodeEl.innerHTML)
   let isTextArea = false
   if (nodeEl.children.length > 0) {
-    console.log(`The tag name of the children is ${nodeEl.children[0].tagName}`)
+    console.debug(`The tag name of the children is ${nodeEl.children[0].tagName}`)
     if (nodeEl.children[0].tagName === "TEXTAREA") {
-      console.log("It is a text area!")
+      console.debug("It is a text area!")
       nodeEl.children[0].focus()
       isTextArea = true
     }
   }
   if (!isTextArea) {
     let name = nodeEl.innerText.replace("\n", "")
-    console.log(`Inner text is ${name}`)
+    console.debug(`Inner text is ${name}`)
     nodeEl.innerText = ""
     let nameInputEl = document.createElement("textarea")
     nameInputEl.classList.add("name")
@@ -190,7 +197,7 @@ function addName(nodeEl) {
     nameInputEl.cols = 2
     nodeEl.appendChild(nameInputEl)
     nameInputEl.focus()
-    console.log(`Input element is of ${nameInputEl.cols} cols`)
+    console.debug(`Input element is of ${nameInputEl.cols} cols`)
     // nameInputEl.addEventListener("click", event => event.target.selectionStart = event.target.selectionEnd = event.target.value.length)
     // nameInputEl.addEventListener("focusin", event => event.preventDefault())
     nameInputEl.addEventListener("focusout", event => saveName(event.target))
@@ -198,7 +205,7 @@ function addName(nodeEl) {
       let key = event.key
       let val = event.target.value
       let save = true
-      console.log(key)
+      console.debug(key)
       if (["Shift", "Control", "Alt", "Command"].includes(key)) {
         event.preventDefault()
         return
@@ -230,10 +237,10 @@ function addName(nodeEl) {
       } else if (key === "Enter") {
         event.preventDefault()
         event.target.blur()
-        console.log("Preventing default behavior and returning")
+        console.debug("Preventing default behavior and returning")
         return
       } else if (key === "Backspace") {
-        console.log(`Backspace is pressed: val is "${val}" is Control Down = ${ctrlDown}`)
+        console.debug(`Backspace is pressed: val is "${val}" is Control Down = ${ctrlDown}`)
         hidePopup()
         if (event.target.cols > 2) {
           event.target.cols = event.target.cols - 1
@@ -260,7 +267,7 @@ function addName(nodeEl) {
       if (!save) {
         event.preventDefault()
       } else {
-        log(`Adding the symbol to the end, length = ${val.length}, cols = ${event.target.cols}`)
+        console.debug(`Adding the symbol to the end, length = ${val.length}, cols = ${event.target.cols}`)
         if (isNameAlreadyPresent(val + key)) {
           event.target.classList.add("warning")
           popupMessage(langPack["name-is-already-present-text"], 1500)
@@ -270,7 +277,7 @@ function addName(nodeEl) {
           hidePopup()
         }
         if (val.length - 1 >= event.target.cols) {
-          console.log("Adding one col")
+          console.debug("Adding one col")
           event.target.cols = event.target.cols + 1
           if (!event.target.classList.contains("up"))
             event.target.classList.add("up")
@@ -280,13 +287,13 @@ function addName(nodeEl) {
   }
 }
 
+// board.js
 let coordinates = {x: -100, y: -100}
 let isMouseDown = false
 let moveNode = null
 let enableMovingTimer
 let edgesToMove = []
 let supportiveNodes = []
-
 function drawNode(x, y) {
   let node = {
     id: nodeNumber++,
@@ -295,9 +302,9 @@ function drawNode(x, y) {
     pointsTo: []
   }
   graph.nodes.push(node)
-  log(`Node created ${JSON.stringify(node)}`)
+  console.info(`Node created ${JSON.stringify(node)}`)
   const nodeEl = document.createElement("div")
-  nodeEl.id = node.id
+  nodeEl.id = "" + node.id
   nodeEl.classList.add('node')
   nodeEl.classList.add('collapse')
   nodeEl.style.left = `${x - nodeRadius}px`
@@ -324,7 +331,7 @@ function drawNode(x, y) {
           if (n.id != node.id)
             for (const edge of n.pointsTo)
               if (edge.id == node.id) {
-                console.log(JSON.stringify(n))
+                console.debug(JSON.stringify(n))
                 edgesToMove.push(document.getElementById(`${n.id}-${node.id}`))
                 let x1 = n.x
                 let y1 = n.y
@@ -347,7 +354,7 @@ function drawNode(x, y) {
           }
         }
     }, 200);
-    console.log(JSON.stringify(coordinates))
+    console.debug(JSON.stringify(coordinates))
   })
   nodeEl.addEventListener("mouseup", (event) => {
     clearTimeout(enableMovingTimer)
@@ -370,24 +377,24 @@ function drawNode(x, y) {
           // edge already exists
           if (from.pointsTo.find(node => node.id == to.id) ||
               !isDirected && to.pointsTo.find(node => node.id == from.id)) {
-            log("Edge already exists")
+            console.info("Edge already exists")
           } else {
             from.pointsTo.push({id: to.id, weight: 1})
             if (!isDirected)
               to.pointsTo.push({id: from.id, weight: 1})
             drawEdge(from.x, from.y, to.x, to.y, from.id, to.id)
-            log(JSON.stringify(graph))
+            console.debug(JSON.stringify(graph))
           }
           document.getElementById(`${activeNodeID}`).classList.remove("active")
           activeNodeID = -1
         }
-        log(`ActiveID is ${activeNodeID}`)
+        console.debug(`ActiveID is ${activeNodeID}`)
       }
     }
   })
   nodeEl.addEventListener("dblclick", (event) => {
     const el = event.target
-    log(`removing child with id ${el.id}`)
+    console.info(`removing child with id ${el.id}`)
     boardEl.removeChild(el)
     const edges = document.querySelectorAll('.edge')
     edges.forEach(edge => {
@@ -402,7 +409,7 @@ function drawNode(x, y) {
     if (graph.nodes.length === 0)
       enableProperties()
     activeNodeID = -1
-    log(JSON.stringify(graph))
+    console.debug(JSON.stringify(graph))
   })
   boardEl.appendChild(nodeEl)
   addNameFromID(node.id)
@@ -417,7 +424,7 @@ function isComplementary(from, to) {
 }
 
 function drawEdge(x1, y1, x2, y2, id1, id2, weight = 1) {
-  log(`Adding edge (${x1}, ${y1}) ${isDirected ? '' : '<'}-> (${x2}, ${y2})`)
+  console.info(`Adding edge (${x1}, ${y1}) ${isDirected ? '' : '<'}-> (${x2}, ${y2})`)
   const lineEl = document.createElement("div")
   lineEl.id = `${id1}-${id2}`
   const length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2))
@@ -434,18 +441,18 @@ function drawEdge(x1, y1, x2, y2, id1, id2, weight = 1) {
     boardEl.removeChild(target)
     const [from, to] = id.split('-')
     let node = graph.nodes.find(node => node.id == from)
-    log(`${from} -> ${to} (${JSON.stringify(node)})`)
+    console.debug(`${from} -> ${to} (${JSON.stringify(node)})`)
     node.pointsTo = node.pointsTo.filter(x => x.id != to)
     if (!isDirected) {
       node = graph.nodes.find(node => node.id == to)
       node.pointsTo = node.pointsTo.filter(x => x.id != from)
     }
-    log(JSON.stringify(graph))
+    console.debug(JSON.stringify(graph))
   }
 
   // add an arrow
   if (graph.directed) {
-    console.log(`id1 = ${id1}, id2 = ${id2}`)
+    console.debug(`id1 = ${id1}, id2 = ${id2}`)
     const arrowEl = document.createElement("span")
     arrowEl.classList.add("arrow")
     arrowEl.innerText = '>'
@@ -478,9 +485,9 @@ function drawEdge(x1, y1, x2, y2, id1, id2, weight = 1) {
     weightInputEl.id = `${lineEl.id}-w`
     weightInputEl.rows = 1
     weightInputEl.cols = 2
-    weightInputEl.innerText = weight
+    weightInputEl.innerText = "" + weight
     weightInputEl.dataset.transform = '0'
-    console.log(`Angel of the edge is ${angel}`)
+    console.debug(`Angel of the edge is ${angel}`)
     let complementary = graph.directed && isComplementary(id1, id2)
 
     if (angel > Math.PI / 2) {
@@ -509,7 +516,7 @@ function notCollideWithOthers(x, y) {
   for (const node of graph.nodes) {
     const dist = Math.sqrt(Math.pow(node.x - x, 2) + Math.pow(node.y - y, 2))
     if (dist < 2.4 * nodeRadius) {
-      log("node collides with other")
+      console.warn("Trying to create node but it collides with other one")
       return false
     }
   }
@@ -527,16 +534,16 @@ function isProperPositionOnBoard(x, y) {
 boardEl.addEventListener("mousedown", event => {
   if (event.target.id === "board") {
     boardCoordinates = {x: event.offsetX, y: event.offsetY}
-    console.log(JSON.stringify(boardCoordinates))
+    console.debug(JSON.stringify(boardCoordinates))
   }
 })
 boardEl.addEventListener("mousemove", event => {
   if (isMouseDown && event.target.id === "board") {
     // move node and adjacent nodes
     if (isMouseDown) {
-      console.log(JSON.stringify(edgesToMove))
-      console.log(JSON.stringify(supportiveNodes))
-      console.log({x: event.offsetX, y: event.offsetY})
+      console.debug(JSON.stringify(edgesToMove))
+      console.debug(JSON.stringify(supportiveNodes))
+      console.debug({x: event.offsetX, y: event.offsetY})
       let x = event.offsetX
       let y = event.offsetY
       if (isProperPositionOnBoard(x, y)) {
@@ -572,8 +579,8 @@ boardEl.addEventListener("mousemove", event => {
           if (graph.weighted) {
             let weightEl = edge.children[graph.directed ? 1 : 0]
             let transform = weightEl.dataset.transform
-            console.log("Transform type: " + transform)
-            console.log(angel + "rad")
+            console.debug("Transform type: " + transform)
+            console.debug(angel + "rad")
             if (angel > Math.PI / 2) {
               if (transform === '0') {
                 weightEl.style.transform = "rotate(180deg) translateY(-10%)"
@@ -597,12 +604,14 @@ boardEl.addEventListener("mousemove", event => {
     }
   }
 })
+
+// board.js
 boardEl.addEventListener("mouseup", event => {
   if (boardCoordinates.x === event.offsetX && boardCoordinates.y === event.offsetY) {
     if (event.target.id === "board") {
       const x = event.offsetX
       const y = event.offsetY
-      log(`Click on board: x=${x}, y=${y}`)
+      console.debug(`Click on board: x=${x}, y=${y}`)
       if (isProperPositionOnBoard(x, y)) {
         if (graph.nodes.length === 0) {
           disableProperties()
@@ -630,6 +639,6 @@ boardEl.addEventListener("mouseup", event => {
     isMouseDown = false
     edgesToMove = []
     supportiveNodes = []
-    console.log(JSON.stringify({x: event.offsetX, y: event.offsetY}))
+    console.debug(JSON.stringify({x: event.offsetX, y: event.offsetY}))
   }
 })
